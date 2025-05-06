@@ -1,5 +1,20 @@
 // Wordle in JavaScript in 20 minutes https://youtu.be/oKM2nQdQkIU
 
+// Setup service worker
+if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('sw.js').then(reg => {
+        reg.onupdatefound = () => {
+            const newWorker = reg.installing;
+            newWorker.onstatechange = () => {
+                if (newWorker.state === 'activated') {
+                    window.location.reload();
+                }
+            };
+        };
+    });
+}
+// Create a "Clear Cache" or "Check for Update" button for manual control
+
 // const dict = ['earth','plane','crane','audio','house'];
 import { words, all_words } from './wordle_words.js';
 
@@ -9,7 +24,8 @@ const keyboardKeys = [
     ['enter', 'z', 'x', 'c', 'v', 'b', 'n', 'm', 'del']
 ];
 
-let pos = 1;
+// let pos = 1;
+let pos = Number(localStorage.getItem('pos')) || 1;
 
 const state = {
     // secret: words[Math.floor(Math.random() * words.length)], // choose random word from list of words
@@ -20,7 +36,6 @@ const state = {
         .map(() => Array(5).fill('')),
     currentRow: 0,
     currentCol: 0,
-    // gameRestart: false,
 };
 
 function shuffleArray(arr) {
@@ -135,6 +150,7 @@ function revealWord(guess) {
     if (isWinner || isGameOver) {
         setTimeout(() => {
             state.secret = words[pos++];
+            localStorage.setItem('pos', pos);
             state.currentRow = 0;
             state.currentCol = 0;
             state.grid = Array(6)

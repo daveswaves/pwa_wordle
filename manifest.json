@@ -1,0 +1,22 @@
+{
+    "name": "Wordle",
+    "short_name": "Wordle",
+    "description": "PWA Wordle puzzle with multiple plays.",
+    "start_url": "/wordle/",
+    "display": "standalone",
+    "orientation": "portrait",
+    "background_color": "#121213",
+    "theme_color": "#121213",
+    "icons": [
+      {
+        "src": "icon-192.png",
+        "sizes": "192x192",
+        "type": "image/png"
+      },
+      {
+        "src": "icon-512-v8.png",
+        "sizes": "512x512",
+        "type": "image/png"
+      }
+    ]
+  }
