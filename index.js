@@ -16,7 +16,9 @@ if ('serviceWorker' in navigator) {
 // Create a "Clear Cache" or "Check for Update" button for manual control
 
 // const dict = ['earth','plane','crane','audio','house'];
-import { words, all_words } from './wordle_words.js';
+import { words, extra_words } from './wordle_words.js';
+
+const all_words = [...words, ...extra_words];
 
 const keyboardKeys = [
     ['q', 'w', 'e', 'r', 't', 'y', 'u', 'i', 'o', 'p'],
@@ -24,13 +26,12 @@ const keyboardKeys = [
     ['enter', 'z', 'x', 'c', 'v', 'b', 'n', 'm', 'del']
 ];
 
-// let pos = 1;
-let pos = Number(localStorage.getItem('pos')) || 1;
+let pos = Number(localStorage.getItem('pos')) || 0;
 
 const state = {
     // secret: words[Math.floor(Math.random() * words.length)], // choose random word from list of words
     // secret: shuffleArray(words)[0], // shuffle list of words and get first
-    secret: words[0],
+    secret: words[pos],
     grid: array5x6(),
     currentRow: 0,
     currentCol: 0,
@@ -138,10 +139,10 @@ function revealWord(guess) {
 
     setTimeout(() => {
         if (isWinner) {
-            console.log('Well Done!');
+            showMessage('Excellent');
         }
         else if (isGameOver) {
-            console.log(`Better luck next time! The word was ${state.secret}.`);
+            showMessage(`Hey, DUMB FUCK, the word was '${state.secret}'!`);
         }
     }, 3 * animation_duration);
 
@@ -153,7 +154,7 @@ function revealWord(guess) {
             state.currentCol = 0;
             state.grid = array5x6();
             startup();
-        }, 3000);
+        }, 3500);
     }
 }
 
@@ -166,8 +167,6 @@ function array5x6() {
 function updateKeyColor(button, newClass) {
     const priority = { right: 3, wrong: 2, empty: 1 };
     const existingClass = ['right', 'wrong', 'empty'].find(cls => button.classList.contains(cls));
-
-    // console.log(existingClass); // undefined
 
     // Only update if new class has higher priority
     if (!existingClass || priority[newClass] > priority[existingClass]) {
@@ -186,9 +185,9 @@ function handleKeyInput(key) {
                 state.currentRow++;
                 state.currentCol = 0;
             }
+            // Invalid word
             else {
-                // invalid word
-                console.log('Invalid: ', word);
+                showMessage('Not in word list');
             }
         }
     }
@@ -225,14 +224,50 @@ function registerKeyboardEvents() {
     };
 }
 
+function showMessage(message, duration = 3000) {
+    let msgDiv = document.createElement('div');
+    msgDiv.textContent = message;
+
+    // Basic styling
+    Object.assign(msgDiv.style, {
+        position: 'fixed',
+        top: '20px',
+        left: '50%',
+        transform: 'translateX(-50%)',
+        backgroundColor: '#333',
+        color: '#fff',
+        padding: '10px 20px',
+        borderRadius: '5px',
+        boxShadow: '0 2px 10px rgba(0, 0, 0, 0.3)',
+        zIndex: 1000,
+        opacity: '0',
+        transition: 'opacity 0.3s ease',
+        fontFamily: 'sans-serif'
+    });
+
+    document.body.appendChild(msgDiv);
+
+    // Trigger fade-in
+    requestAnimationFrame(() => {
+        msgDiv.style.opacity = '1';
+    });
+
+    // Remove after duration
+    setTimeout(() => {
+        msgDiv.style.opacity = '0';
+        setTimeout(() => {
+            msgDiv.remove();
+        }, 300); // match transition duration
+    }, duration);
+}
+
+
 const specialKeys = {
     enter: { label: 'Enter', class: 'wide-button' },
     del: { label: 'Del', class: 'wide-button' }
 };
 
 const keyboardDiv = document.getElementById('keyboard');
-
-// drawKeyboard(keyboardKeys);
 
 function drawKeyboard(keyboardKeys) {
     keyboardDiv.innerHTML = '';
