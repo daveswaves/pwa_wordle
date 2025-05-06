@@ -31,20 +31,18 @@ const state = {
     // secret: words[Math.floor(Math.random() * words.length)], // choose random word from list of words
     // secret: shuffleArray(words)[0], // shuffle list of words and get first
     secret: words[0],
-    grid: Array(6)
-        .fill()
-        .map(() => Array(5).fill('')),
+    grid: array5x6(),
     currentRow: 0,
     currentCol: 0,
 };
 
-function shuffleArray(arr) {
+/* function shuffleArray(arr) {
     for (let i = arr.length - 1; i > 0; i--) {
-      const j = Math.floor(Math.random() * (i + 1));
-      [arr[i], arr[j]] = [arr[j], arr[i]]; // Swap elements
+        const j = Math.floor(Math.random() * (i + 1));
+        [arr[i], arr[j]] = [arr[j], arr[i]]; // Swap elements
     }
     return arr;
-  }
+}*/
 
 function updateGrid() {
     for (let i = 0; i < state.grid.length; i++) {
@@ -153,12 +151,16 @@ function revealWord(guess) {
             localStorage.setItem('pos', pos);
             state.currentRow = 0;
             state.currentCol = 0;
-            state.grid = Array(6)
-                .fill()
-                .map(() => Array(5).fill(''));
+            state.grid = array5x6();
             startup();
         }, 3000);
     }
+}
+
+function array5x6() {
+    return Array(6)
+        .fill()
+        .map(() => Array(5).fill(''));
 }
 
 function updateKeyColor(button, newClass) {
