@@ -37,6 +37,13 @@ const state = {
     currentCol: 0,
 };
 
+const specialKeys = {
+    enter: { label: 'Enter', class: 'wide-button' },
+    del: { label: 'Del', class: 'wide-button' }
+};
+
+const keyboardDiv = document.getElementById('keyboard');
+
 /* function shuffleArray(arr) {
     for (let i = arr.length - 1; i > 0; i--) {
         const j = Math.floor(Math.random() * (i + 1));
@@ -211,6 +218,9 @@ function registerKeyboardEvents() {
         
         const key = e.key.toLowerCase();
 
+        console.log(key);
+        
+
         // Normalize special keys
         if (key === 'backspace' || key === 'del') {
             handleKeyInput('del');
@@ -234,7 +244,7 @@ function showMessage(message, duration = 3000) {
         top: '20px',
         left: '50%',
         transform: 'translateX(-50%)',
-        backgroundColor: '#333',
+        backgroundColor: '#009',
         color: '#fff',
         padding: '10px 20px',
         borderRadius: '5px',
@@ -261,14 +271,6 @@ function showMessage(message, duration = 3000) {
     }, duration);
 }
 
-
-const specialKeys = {
-    enter: { label: 'Enter', class: 'wide-button' },
-    del: { label: 'Del', class: 'wide-button' }
-};
-
-const keyboardDiv = document.getElementById('keyboard');
-
 function drawKeyboard(keyboardKeys) {
     keyboardDiv.innerHTML = '';
     
@@ -294,6 +296,12 @@ function drawKeyboard(keyboardKeys) {
             } else {
                 btn.textContent = key;
             }
+
+            // Detect button click
+            btn.onclick = () => {
+                // console.log(key);
+                handleKeyInput(key);
+            };
     
             rowDiv.appendChild(btn);
         });
@@ -307,15 +315,6 @@ function drawKeyboard(keyboardKeys) {
       
         keyboardDiv.appendChild(rowDiv);
     });
-}
-
-const keys = document.querySelectorAll('.keyboard-row button');
-    
-for (let i = 0; i < keys.length; i++) {
-    keys[i].onclick = ({ target }) => {
-        const key = target.getAttribute('data-key');
-        handleKeyInput(key);
-    }
 }
 
 function startup() {

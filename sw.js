@@ -1,55 +1,60 @@
 // sw.js
-self.addEventListener('install', () => self.skipWaiting());
-self.addEventListener('activate', (event) => event.waitUntil(clients.claim()));
+// self.addEventListener('install', () => self.skipWaiting());
+// self.addEventListener('activate', (e) => e.waitUntil(clients.claim()));
 
-/* 
-const CACHE_NAME = 'wordle-cache-v1';
+const VERSION = 2;
+const CACHE_NAME = `wordle-cache-v${VERSION}`;
+
+const BASE_PATH = self.location.pathname.replace(/\/sw\.js$/, "");
+
 const FILES_TO_CACHE = [
-  '/',
-  '/index.html',
-  '/index.js',
-  '/style.css',
-  '/wordle_words.js',
-  '/image/icon-192.png',
-  '/image/icon-512.png'
+  `${BASE_PATH}/`,
+  `${BASE_PATH}/index.html`,
+  `${BASE_PATH}/index.js`,
+  `${BASE_PATH}/style.css`,
+  `${BASE_PATH}/wordle_words.js`,
+  `${BASE_PATH}/image/icon-192.png`,
+  `${BASE_PATH}/image/icon-512.png`,
 ];
 
-self.addEventListener('install', event => {
-  event.waitUntil(
-    caches.open(CACHE_NAME).then(cache => cache.addAll(FILES_TO_CACHE))
+self.addEventListener('install', (e) => {
+  e.waitUntil(
+    (async () => {
+      const cache = await caches.open(CACHE_NAME);
+      await cache.addAll(FILES_TO_CACHE);
+      self.skipWaiting(); // Ensures immediate activation
+    })(),
   );
-  self.skipWaiting();
 });
 
-self.addEventListener('activate', event => {
-  event.waitUntil(
-    caches.keys().then(keys =>
-      Promise.all(
-        keys.map(key => {
+self.addEventListener('activate', (e) => {
+  e.waitUntil(
+    (async () => {
+      const names = await caches.keys();
+      await Promise.all(
+        names.map((key) => {
           if (key !== CACHE_NAME) {
             return caches.delete(key);
           }
-        })
-      )
-    )
+        }),
+      );
+      await clients.claim();
+    })(),
   );
-  self.clients.claim();
 });
 
-self.addEventListener('fetch', event => {
-  // Only serve from cache for the listed files
-  const url = new URL(event.request.url);
-  const isCachedFile = FILES_TO_CACHE.includes(url.pathname);
+self.addEventListener("fetch", (e) => {
+  const { request } = e;
+  const url = new URL(request.url);
+  const isCachedFile = request.method === "GET" && FILES_TO_CACHE.includes(url.pathname);
 
   if (isCachedFile) {
-    event.respondWith(
-      caches.match(event.request).then(response => {
-        return response || new Response('File not found in cache', { status: 404 });
+    e.respondWith(
+      caches.match(request).then((cached) => {
+        return cached || fetch(request).catch(() =>
+          new Response("File not found in cache or network", { status: 404 })
+        );
       })
     );
-  } else {
-    // Fallback for other requests (can be removed if not needed)
-    event.respondWith(fetch(event.request));
   }
 });
-*/
