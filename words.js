@@ -1,5 +1,5 @@
 export const words = [
-    'bruit',
+    'great',
     'nasus',
     'wrist',
     'comox',
@@ -82,7 +82,7 @@ export const words = [
     'kench',
     'kongo',
     'snood',
-    'great',
+    'bruit',
     'moroc',
     'kulak',
     'topic',

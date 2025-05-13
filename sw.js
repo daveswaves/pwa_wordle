@@ -1,8 +1,5 @@
 // sw.js
-// self.addEventListener('install', () => self.skipWaiting());
-// self.addEventListener('activate', (e) => e.waitUntil(clients.claim()));
-
-const VERSION = 1746978767;
+const VERSION = 1747069854;
 const CACHE_NAME = `wordle-cache-v${VERSION}`;
 
 const BASE_PATH = self.location.pathname.replace(/\/sw\.js$/, "");
@@ -10,9 +7,9 @@ const BASE_PATH = self.location.pathname.replace(/\/sw\.js$/, "");
 const FILES_TO_CACHE = [
   `${BASE_PATH}/`,
   `${BASE_PATH}/index.html`,
-  `${BASE_PATH}/index.js`,
+  `${BASE_PATH}/app.js`,
   `${BASE_PATH}/style.css`,
-  `${BASE_PATH}/wordle_words.js`,
+  `${BASE_PATH}/words.js`,
   `${BASE_PATH}/image/icon-192.png`,
   `${BASE_PATH}/image/icon-512.png`,
 ];

@@ -1,4 +1,8 @@
-// Wordle in JavaScript in 20 minutes https://youtu.be/oKM2nQdQkIU
+/* 
+app.js
+https://youtu.be/j7OhcuZQ-q8?t=878
+https://youtu.be/oKM2nQdQkIU?t=910
+*/
 
 // Setup service worker
 if ('serviceWorker' in navigator) {
@@ -18,7 +22,6 @@ if ('serviceWorker' in navigator) {
 import { words } from './words.js';
 // import { words, extra_words } from './wordle_words.js';
 // const all_words = [...words, ...extra_words];
-
 
 const keyboardKeys = [
     ['q', 'w', 'e', 'r', 't', 'y', 'u', 'i', 'o', 'p'],
@@ -356,6 +359,3 @@ function startup() {
 }
 
 startup();
-
-// https://youtu.be/j7OhcuZQ-q8?t=878
-// https://youtu.be/oKM2nQdQkIU?t=910
