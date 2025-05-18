@@ -40,9 +40,10 @@ let obj = {
     msg: "My message",
     fontSize: '2em',         // default: 1em
     backgroundColor: '#040', // default: #009
-    top: '10%',              // default: 15%
+    top: '10%',              // default: 10%
     width: '80%',            // default: 50%
     zIndex: 1001,            // default: 1000
+    displayDuration: 8000,   // default: 3000
     callDelay: 2000,         // default: 0
 }
 showMessage(obj)
@@ -229,8 +230,11 @@ function revealWord(guess) {
             showMessage({msg: 'Excellent', fontSize: '2.6em'});
         }
         else if (isGameOver) {
-            showMessage({msg: `Hey, DUMB FUCK, the word was '${state.secret}'!`})
-            
+            showMessage({
+                msg: `Hey, DUMB FUCK, the word was '${state.secret}'!`,
+                fontSize: '1.6em',
+                width: '80%',
+            })
         }
     }, 3 * animation_duration);
 
@@ -323,11 +327,11 @@ function showMessage(obj) {
     let msgDiv = document.createElement('div');
     msgDiv.innerHTML = obj.msg;
 
-    let top = obj.top ? obj.top : '15%';
+    let top = obj.top ? obj.top : '10%';
     let width = obj.width ? obj.width : '50%';
     let fontSize = obj.fontSize ? obj.fontSize : '1em';
     let callDelay = obj.callDelay ? obj.callDelay : 0;
-    let duration = obj.displayDuration ? obj.displayDuration : 3000;
+    let duration = obj.displayDuration ? obj.displayDuration : 5000;
     let backgroundColor = obj.backgroundColor ? obj.backgroundColor : '#009';
     let zIndex = obj.zIndex ? obj.zIndex : 1000;
 
