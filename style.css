@@ -1,7 +1,8 @@
 :root {
     --default: #121213;
     --empty: #3a3a3c;
-    --wrong: #b59f3b;
+    --wrong: #3b74b5;
+    /* --wrong: #b59f3b; */
     --right: #538d4e;
 
     --box-size: 16vw;
@@ -97,7 +98,7 @@ body {
 button {
     font-family: inherit;
     font-weight: bold;
-    font-size: 0.8rem;
+    font-size: 1.6rem;
     border: 0;
     padding: 0;
     height: 10vw;
@@ -108,12 +109,14 @@ button {
     min-width: 0;
 
     text-transform: uppercase;
-    margin-right: 6px;
+    margin-right: 3px;
+    /* margin-right: 6px; */
     border-radius: 4px;
     user-select: none;
 }
 
 .keyboard-row button.wide-button {
+    font-size: 0.9rem;
     flex: 1.5;
 }
 

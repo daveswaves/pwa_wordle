@@ -7,34 +7,72 @@ https://youtu.be/oKM2nQdQkIU?t=910
 // Setup service worker
 if ('serviceWorker' in navigator) {
     navigator.serviceWorker.register('sw.js').then(reg => {
-        reg.onupdatefound = () => {
-            const newWorker = reg.installing;
-            newWorker.onstatechange = () => {
-                if (newWorker.state === 'activated') {
-                    window.location.reload();
-                }
-            };
-        };
+        reg.update();
     });
 }
-// Create a "Clear Cache" or "Check for Update" button for manual control
 
+import { notes } from './release_notes.js';
+
+navigator.serviceWorker.addEventListener('message', (e) => {
+    if (e.data && e.data.type === 'VERSION_UPDATED') {
+        const prevVersion = localStorage.getItem('sw_version_wordle');
+        const newVersion = e.data.version.toString();
+
+        console.log(prevVersion, newVersion);
+
+        if (prevVersion !== newVersion) {
+            localStorage.setItem('pos', 0);
+            localStorage.setItem('sw_version_wordle', newVersion);
+
+            showMessage({
+                msg: `<b><i>App update - ${newVersion}</i></b> ${notes.msg}`,
+                fontSize: '1.2em',
+                width: '80%',
+                displayDuration: 8000,
+                callDelay: 500,
+            });
+        }
+    }
+});
+
+/* 
+let obj = {
+    msg: "My message",
+    fontSize: '2em',         // default: 1em
+    backgroundColor: '#040', // default: #009
+    top: '10%',              // default: 15%
+    width: '80%',            // default: 50%
+    zIndex: 1001,            // default: 1000
+    callDelay: 2000,         // default: 0
+}
+showMessage(obj)
+ */
+
+import { wordset } from './largewordset.js';
 import { words } from './words.js';
+const shuffled_words = shuffleArray(words);
+shuffled_words.unshift('enter');
+// console.log(shuffled_words[0]);
 // import { words, extra_words } from './wordle_words.js';
 // const all_words = [...words, ...extra_words];
+
+// First test word: enter [clear]
 
 const keyboardKeys = [
     ['q', 'w', 'e', 'r', 't', 'y', 'u', 'i', 'o', 'p'],
     ['a', 's', 'd', 'f', 'g', 'h', 'j', 'k', 'l'],
-    ['enter', 'z', 'x', 'c', 'v', 'b', 'n', 'm', 'del']
+    [ 'z', 'x', 'c', 'v', 'b', 'n', 'm', 'del'],
+    ['enter', 'clear']
+    // ['enter', 'z', 'x', 'c', 'v', 'b', 'n', 'm', 'del']
 ];
 
 let pos = Number(localStorage.getItem('pos')) || 0;
 
+
 const state = {
-    // secret: words[Math.floor(Math.random() * words.length)], // choose random word from list of words
+    // secret: shuffled_words[Math.floor(Math.random() * shuffled_words.length)], // choose random word from list of words
     // secret: shuffleArray(words)[0], // shuffle list of words and get first
-    secret: words[pos],
+    secret: shuffled_words[pos],
     grid: array5x6(),
     currentRow: 0,
     currentCol: 0,
@@ -42,18 +80,19 @@ const state = {
 
 const specialKeys = {
     enter: { label: 'Enter', class: 'wide-button' },
-    del: { label: 'Del', class: 'wide-button' }
+    del: { label: 'Back', class: 'wide-button' },
+    clear: { label: 'Clear', class: 'wide-button' },
 };
 
 const keyboardDiv = document.getElementById('keyboard');
 
-/* function shuffleArray(arr) {
+function shuffleArray(arr) {
     for (let i = arr.length - 1; i > 0; i--) {
         const j = Math.floor(Math.random() * (i + 1));
         [arr[i], arr[j]] = [arr[j], arr[i]]; // Swap elements
     }
     return arr;
-}*/
+}
 
 function updateGrid() {
     for (let i = 0; i < state.grid.length; i++) {
@@ -102,8 +141,19 @@ function isLetter(key) {
     return key.length === 1 && key.match(/[a-z]/i);
 }
 
-function isWordValid(words, word) {
-    return words.includes(word);
+function isWordValid(shuffled_words, word) {
+    return shuffled_words.includes(word);
+}
+
+function clearLetters() {
+    if (state.currentCol === 0) return;
+    state.grid[state.currentRow][0] = '';
+    state.grid[state.currentRow][1] = '';
+    state.grid[state.currentRow][2] = '';
+    state.grid[state.currentRow][3] = '';
+    state.grid[state.currentRow][4] = '';
+    // console.log(state.currentCol);
+    state.currentCol = 0;
 }
 
 function removeLetter() {
@@ -176,16 +226,17 @@ function revealWord(guess) {
 
     setTimeout(() => {
         if (isWinner) {
-            showMessage('Excellent');
+            showMessage({msg: 'Excellent', fontSize: '2.6em'});
         }
         else if (isGameOver) {
-            showMessage(`Hey, DUMB FUCK, the word was '${state.secret}'!`);
+            showMessage({msg: `Hey, DUMB FUCK, the word was '${state.secret}'!`})
+            
         }
     }, 3 * animation_duration);
 
     if (isWinner || isGameOver) {
         setTimeout(() => {
-            state.secret = words[pos++];
+            state.secret = shuffled_words[++pos];
             localStorage.setItem('pos', pos);
             state.currentRow = 0;
             state.currentCol = 0;
@@ -217,20 +268,26 @@ function handleKeyInput(key) {
         if (state.currentCol === 5) {
             const word = getCurrentWord();
             
-            if (isWordValid(words, word)) {
-            // if (isWordValid(all_words, word)) {
+            if (isWordValid(wordset, word)) {
                 revealWord(word);
                 state.currentRow++;
                 state.currentCol = 0;
             }
             // Invalid word
             else {
-                showMessage('Not in word list');
+                showMessage({
+                    msg: 'Not in word list',
+                    fontSize: '2em',
+                    width: '80%'
+                });
             }
         }
     }
     else if (key === 'del') {
         removeLetter();
+    }
+    else if (key === 'clear') {
+        clearLetters();
     }
     else if (isLetter(key)) {
         addLetter(key);
@@ -249,9 +306,6 @@ function registerKeyboardEvents() {
         
         const key = e.key.toLowerCase();
 
-        console.log(key);
-        
-
         // Normalize special keys
         if (key === 'backspace' || key === 'del') {
             handleKeyInput('del');
@@ -265,41 +319,56 @@ function registerKeyboardEvents() {
     };
 }
 
-function showMessage(message, duration = 3000) {
+function showMessage(obj) {
     let msgDiv = document.createElement('div');
-    msgDiv.textContent = message;
+    msgDiv.innerHTML = obj.msg;
+
+    let top = obj.top ? obj.top : '15%';
+    let width = obj.width ? obj.width : '50%';
+    let fontSize = obj.fontSize ? obj.fontSize : '1em';
+    let callDelay = obj.callDelay ? obj.callDelay : 0;
+    let duration = obj.displayDuration ? obj.displayDuration : 3000;
+    let backgroundColor = obj.backgroundColor ? obj.backgroundColor : '#009';
+    let zIndex = obj.zIndex ? obj.zIndex : 1000;
 
     // Basic styling
     Object.assign(msgDiv.style, {
         position: 'fixed',
-        top: '20px',
+        top: top,
         left: '50%',
         transform: 'translateX(-50%)',
-        backgroundColor: '#009',
+        width: width,
+        backgroundColor: backgroundColor,
         color: '#fff',
         padding: '10px 20px',
-        borderRadius: '5px',
+        border: 'solid 1px #000',
+        borderRadius: '10px',
         boxShadow: '0 2px 10px rgba(0, 0, 0, 0.3)',
-        zIndex: 1000,
+        zIndex: zIndex,
         opacity: '0',
         transition: 'opacity 0.3s ease',
-        fontFamily: 'sans-serif'
+        fontSize: fontSize,
+        fontFamily: 'sans-serif',
+        textAlign: 'center'
     });
 
     document.body.appendChild(msgDiv);
 
-    // Trigger fade-in
-    requestAnimationFrame(() => {
-        msgDiv.style.opacity = '1';
-    });
-
-    // Remove after duration
+    // Call delay
     setTimeout(() => {
-        msgDiv.style.opacity = '0';
-        setTimeout(() => {
-            msgDiv.remove();
-        }, 300); // match transition duration
-    }, duration);
+      // Trigger fade-in
+      requestAnimationFrame(() => {
+          msgDiv.style.opacity = '1';
+      });
+
+      // Remove after duration
+      setTimeout(() => {
+          msgDiv.style.opacity = '0';
+          setTimeout(() => {
+              msgDiv.remove();
+          }, 300); // match transition duration
+      }, duration);
+    }, callDelay);
 }
 
 function drawKeyboard(keyboardKeys) {
@@ -310,7 +379,7 @@ function drawKeyboard(keyboardKeys) {
         rowDiv.classList.add('keyboard-row');
       
         // Add spacer for second row
-        if (rowIndex === 1) {
+        if (rowIndex === 3) {
             const spacerLeft = document.createElement('div');
             spacerLeft.classList.add('spacer-half');
             rowDiv.appendChild(spacerLeft);
@@ -338,7 +407,7 @@ function drawKeyboard(keyboardKeys) {
         });
       
         // Add spacer for second row
-        if (rowIndex === 1) {
+        if (rowIndex === 3) {
             const spacerRight = document.createElement('div');
             spacerRight.classList.add('spacer-half');
             rowDiv.appendChild(spacerRight);

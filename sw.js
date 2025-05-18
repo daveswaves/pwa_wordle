@@ -1,5 +1,5 @@
 // sw.js
-const VERSION = 1747069854;
+const VERSION = '20250518.v4';
 const CACHE_NAME = `wordle-cache-v${VERSION}`;
 
 const BASE_PATH = self.location.pathname.replace(/\/sw\.js$/, "");
@@ -10,11 +10,14 @@ const FILES_TO_CACHE = [
   `${BASE_PATH}/app.js`,
   `${BASE_PATH}/style.css`,
   `${BASE_PATH}/words.js`,
+  `${BASE_PATH}/largewordset.js`,
   `${BASE_PATH}/image/icon-192.png`,
   `${BASE_PATH}/image/icon-512.png`,
 ];
 
 self.addEventListener('install', (e) => {
+  console.log('SW installing...');
+
   e.waitUntil(
     (async () => {
       const cache = await caches.open(CACHE_NAME);
@@ -25,6 +28,8 @@ self.addEventListener('install', (e) => {
 });
 
 self.addEventListener('activate', (e) => {
+  console.log('SW activated');
+
   e.waitUntil(
     (async () => {
       const names = await caches.keys();
@@ -36,6 +41,12 @@ self.addEventListener('activate', (e) => {
         }),
       );
       await clients.claim();
+
+      // Notify clients of version change
+      const allClients = await clients.matchAll({ includeUncontrolled: true });
+      for (const client of allClients) {
+        client.postMessage({ type: 'VERSION_UPDATED', version: VERSION });
+      }
     })(),
   );
 });
